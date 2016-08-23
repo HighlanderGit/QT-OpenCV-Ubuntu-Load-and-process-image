@@ -27,13 +27,11 @@ MainWindow::~MainWindow()
 void MainWindow::on_pushButton_clicked()
 {
 
-    cv::Mat frame;
-
     qDebug() << "Hello World";
 
-    cv::Mat test_image = cv::imread("lady.jpg");
+    cv::Mat frame = cv::imread("lady.jpg");
 
-    if(!test_image.data)
+    if(!frame.data)
     {
         QMessageBox msg;
         msg.setText("Could not load image");
@@ -41,14 +39,13 @@ void MainWindow::on_pushButton_clicked()
 
     }
 
-    cvtColor(test_image, frame, CV_BGR2YCrCb);
+    //------------------------------------------------------------
+    //------------------------------------------------------------
 
-    //Las funciones de procesameinto de imagenes deben de ir aqui, la imagend de entrada es en este punto YCrCb
+    //Las funciones de procesameinto de imagenes deben de ir aqui, la imagend de entrada es en este punto BGR
     //add the code here
 
     std::vector<cv::Mat> ColorPlanes;
-
-    cv::cvtColor(frame, frame, CV_YCrCb2BGR);
 
     cv::split(frame,ColorPlanes);
     //cv::equalizeHist(ColorPlanes[0], ColorPlanes[0]);
@@ -57,7 +54,6 @@ void MainWindow::on_pushButton_clicked()
 
     cv::merge(ColorPlanes,frame);
 
-    //cv::cvtColor(frame, frame, CV_BGR2BGR);
     //
     //La imagen se espera que este en BGR en este punto para que el video pueda ser reproducido
     //------------------------------------------------------------
