@@ -93,9 +93,29 @@ MainWindow::MainWindow(QWidget *parent) :
 
     }
 
-    /*/------------------------------------------------/*
     cv::bitwise_not(threshold_image,threshold_image);
 
+    findContours(Contour_image, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE , cv::Point(0,0));
+
+    for (int i = 0; i< contours.size(); i++){
+
+        qDebug() << "Area  =" << i << cv::contourArea(contours[i]) ;
+        if(cv::contourArea(contours[i]) < 500){
+
+            cv::drawContours(threshold_image, contours, i, cv::Scalar(255), CV_FILLED, 8   );
+        }
+
+    }
+
+    //frame_hsv = frame_hsv.copyTo(frame_hsv, threshold_image);
+
+
+    qDebug() <<"Array size" << contours.size();
+
+
+    //cv::contourArea(contours,)
+
+    /*/------------------------------------------------/*
     Contour_image = threshold_image.clone();
 
     findContours(Contour_image, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE , cv::Point(0,0));
@@ -174,7 +194,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //------------------------------------------------------------
 
     cv::namedWindow("test image",cv::WINDOW_AUTOSIZE);
-    cv::imshow("test image",threshold_image);
+    cv::imshow("test image",frame);
 
     //***********************************************
     //***********************************************
