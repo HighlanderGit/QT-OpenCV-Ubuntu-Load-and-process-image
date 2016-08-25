@@ -32,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //***********************************************
 
 
-    cv::Mat frame = cv::imread("soccer.png");
+    cv::Mat frame = cv::imread("vlcsnap-00060.png");
 
     if(!frame.data)
     {
@@ -42,8 +42,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     }
 
-    //------------------------------------------------------------
-    //------------------------------------------------------------
+    //-----------------------------------------------------------------------
+    //-----------------------------------------------------------------------
+    //-----------------------------------------------------------------------
 
     //Las funciones de procesameinto de imagenes deben de ir aqui, la imagend de entrada es en este punto BGR
     //add the code here
@@ -61,7 +62,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     //Threshold of the image with the hue plane
-    double thresh =150;
+    //double thresh =150;
     double maxValue =75;
     double minValue =26;
     cv::Mat threshold_image;
@@ -99,7 +100,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     for (int i = 0; i< contours.size(); i++){
 
-        qDebug() << "Area  =" << i << cv::contourArea(contours[i]) ;
         if(cv::contourArea(contours[i]) < 500){
 
             cv::drawContours(threshold_image, contours, i, cv::Scalar(255), CV_FILLED, 8   );
@@ -107,13 +107,73 @@ MainWindow::MainWindow(QWidget *parent) :
 
     }
 
-    //frame_hsv = frame_hsv.copyTo(frame_hsv, threshold_image);
+    cv::bitwise_not(threshold_image,threshold_image);
 
+    cv::Mat dst1;
+    ColorPlanes[0].copyTo(dst1,threshold_image);
+
+    cv::Mat dst2;
+    cv::bitwise_not(threshold_image,threshold_image);
+    dst1.copyTo(dst2,threshold_image);
+
+    ColorPlanes[0] = dst1 + dst2;
+
+    cv::inRange(ColorPlanes[0],150, 255, ColorPlanes[0]);
+
+    int erosion_size =3;
+    cv::Mat element = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1), cv::Point(erosion_size, erosion_size) );
+
+    cv::dilate(ColorPlanes[0], ColorPlanes[0], element);
+
+    findContours(ColorPlanes[0], contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE , cv::Point(0,0));
+
+    cv::Rect boundRect;
+    std::vector<cv::Point> contours_poly ;
+
+    for (int i = 0; i< contours.size(); i++){
+
+        //qDebug() << "Area " << i <<" = "<< cv::contourArea(contours[i]) ;
+        if(cv::contourArea(contours[i]) > 60){
+
+            cv::approxPolyDP( cv::Mat(contours[i]), contours_poly, 3, true );
+            boundRect = cv::boundingRect( cv::Mat(contours_poly ));
+            cv::rectangle( frame, boundRect.tl(), boundRect.br(), cv::Scalar(255), 2, 8, 0 );
+
+        }
+
+    }
+
+
+    //-----------------------------------------------------------------------
+    //-----------------------------------------------------------------------
+    //-----------------------------------------------------------------------
 
     qDebug() <<"Array size" << contours.size();
+/*
+    for( int i = 0; i < contours.size(); i++ )
+       { approxPolyDP( Mat(contours[i]), contours_poly[i], 3, true );
+         boundRect[i] = boundingRect( Mat(contours_poly[i]) );
+         minEnclosingCircle( contours_poly[i], center[i], radius[i] );
+       }
+
 
 
     //cv::contourArea(contours,)
+
+    /*
+
+    std::vector<cv::Moments> mu(contours.size() );
+    for( int i = 0; i < contours.size(); i++ )
+     { mu[i] = moments( contours[i], false ); }
+
+    std::vector<cv::Point2f> mc (contours.size());
+    for(int i =0 ; i< contours.size(); i++){
+
+        mc[i] = cv::Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );
+
+    }
+
+    */
 
     /*/------------------------------------------------/*
     Contour_image = threshold_image.clone();
